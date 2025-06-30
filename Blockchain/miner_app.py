@@ -1,6 +1,7 @@
 # === miner_app.py ===
 import threading
 import time
+import random
 from blockchain.block import Block
 from proof_of_work import mine_block
 from utils.logger import setup_logger
@@ -25,7 +26,7 @@ class Miner(threading.Thread):
     def run(self):
         while True:
             if self.stop_flag.is_set():
-                self.logger.info("Stopped mining due to external signal.")
+                self.logger.info("❌ Stopped: Another miner already mined the block.")
                 break
 
             txs = self.mempool.get_transactions(self.max_tx_per_block)
@@ -42,7 +43,7 @@ class Miner(threading.Thread):
                 continue
 
             last_block = self.blockchain[-1]
-            base_reward = 25
+            base_reward = random.randint(10, 30)
             tx_fees = sum(tx.amount * 0.01 for tx in valid_txs)
             reward_amount = base_reward + tx_fees
 

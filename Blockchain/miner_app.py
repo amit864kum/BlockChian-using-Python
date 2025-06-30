@@ -1,4 +1,4 @@
-# miner_app.py
+# === miner_app.py ===
 import threading
 import time
 from blockchain.block import Block
@@ -7,7 +7,7 @@ from utils.logger import setup_logger
 from transactions.transaction import Transaction
 
 class Miner(threading.Thread):
-    def __init__(self, miner_id, blockchain, mempool, utxo_set, difficulty, stop_flag, broadcast_fn, miner_pub_key, miner_priv_key):
+    def __init__(self, miner_id, blockchain, mempool, utxo_set, difficulty, stop_flag, broadcast_fn, miner_pub_key, miner_priv_key, max_tx_per_block=3):
         super().__init__()
         self.miner_id = miner_id
         self.blockchain = blockchain
@@ -18,6 +18,7 @@ class Miner(threading.Thread):
         self.broadcast_fn = broadcast_fn
         self.miner_pub_key = miner_pub_key
         self.miner_priv_key = miner_priv_key
+        self.max_tx_per_block = max_tx_per_block
         self.logger = setup_logger(f"Miner {self.miner_id}")
         self.daemon = True
 
@@ -27,8 +28,8 @@ class Miner(threading.Thread):
                 self.logger.info("Stopped mining due to external signal.")
                 break
 
-            txs = self.mempool.get_transactions(3)
-            if len(txs) < 3:
+            txs = self.mempool.get_transactions(self.max_tx_per_block)
+            if len(txs) < self.max_tx_per_block:
                 time.sleep(0.5)
                 continue
 
@@ -37,7 +38,7 @@ class Miner(threading.Thread):
                 if tx.is_valid() and self.utxo_set.is_valid_transaction(tx):
                     valid_txs.append(tx)
 
-            if len(valid_txs) < 3:
+            if len(valid_txs) < self.max_tx_per_block:
                 continue
 
             last_block = self.blockchain[-1]

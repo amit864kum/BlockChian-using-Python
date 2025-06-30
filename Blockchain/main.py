@@ -11,7 +11,7 @@ from network.node import NodeNetwork
 from Signatures import generate_keys
 from utils.logger import setup_logger
 
-NUM_MINERS = 3
+NUM_MINERS = 10
 DIFFICULTY = 3
 logger = setup_logger("Main")
 
@@ -69,7 +69,8 @@ def run_simulation():
                 stop_flag=stop_flag,
                 broadcast_fn=lambda block: node.broadcast_block(block, stop_flag, vote_fn),
                 miner_pub_key=miner_keys[i][1],
-                miner_priv_key=miner_keys[i][0]
+                miner_priv_key=miner_keys[i][0],
+                  max_tx_per_block=10
             )
             miners.append(miner)
             miner.start()
